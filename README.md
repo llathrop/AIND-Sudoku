@@ -3,11 +3,16 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
+A: With the Naked Twins problem, we have added the constraint that any unit with a matched set of options/numbers in an unsolved cell may no longer have those numbers as an option for other unsolved cells. We do this by:
+* cycling through each box without a solution and attempting to find matching box in the same unit. 
+* if a twin is found track it's cell location
+* we then remove each of the individual digits from all the other unsolved cells, if present, with the exception of our twins.
+* we add this as a step to the original reduce_puzzle (after eliminate and only_choice), to assist in solving the puzzle
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
+A: By adding the requirement of solving the diagonal, we have constrained the problem to only have a solution if that diagonal is solved.
+ We carry this out in our example by simply adding a new unit type and using that unit type along with the other units in the unit list. no other changes were needed.
 
 ### Install
 
