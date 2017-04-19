@@ -28,26 +28,21 @@ def naked_twins(values):
     #print("input to naked twins:")
     #display(values)
     
+    # might as well only deal with boxes of the correct size to start
     size2_boxes=set([box for box in values.keys() if len(values[box])==2])
-    #print("correct size boxes",size2_boxes)
-    for box in size2_boxes: # might as well only deal with boxes of the correct size to start
-        #print("box unit:",units[box])
-        for unit in units[box]:
-            box_unit=size2_boxes & set(unit)
-            #print ("box_unit:",box,box_unit)
+    for box in size2_boxes: 
+        for unit in units[box]: #look at each of the units for the current box
+            box_unit=size2_boxes & set(unit) # we will only be interested in boxes from the unit of the correct size
             naked_twins=[box] #if this grows, we have a list of twins
-            for b_unit in box_unit: # let's examine each peer and see if it is a twin
-                if values[box]==values[b_unit] and not box == b_unit:
-                    #print("twins:{}:{} and {}:{}".format(box,values[box],b_unit,values[b_unit]))
-                    naked_twins.append(b_unit)
-            #print("naked_twins",naked_twins)
+            for b_unit in box_unit: # let's examine each unit member and  and see if it is a twin
+                if values[box]==values[b_unit] and not box == b_unit: 
+                    naked_twins.append(b_unit) # if it is a match and not the original box, we have a twin
     
             if len(naked_twins) >1: #test if we found any twins
-                search_unit=set(unit)-set(naked_twins) # the list of peers that aren't the twins to remove values from
-                #print("search_unit",search_unit)
+                search_unit=set(unit)-set(naked_twins) # the list of unit members that aren't the twins to remove values from
                 for digit in values[box]: # we want to remove the individual digits of the twin
                     for s_unit in search_unit:
-                        if len(values[s_unit])>1:
+                        if len(values[s_unit])>1: # we only want to remove things if it is unsolved.
                             assign_value(values, s_unit, values[s_unit].replace(digit,''))
 
     #print("Output from naked twins:")
@@ -65,10 +60,11 @@ cols = '123456789'
 	
 boxes = cross(rows, cols)
 
+# create the diagonals unit, which is also added to the unit list
 diag_a=[rows[i]+cols[i] for i in range(len(rows))]
 diag_b=[rows[i]+cols[len(rows)-1-i] for i in range(len(rows))]
 diagonal_units=[diag_a,diag_b]
-print(diagonal_units)
+#print(diagonal_units)
 
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
@@ -185,10 +181,10 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
-    print("solving")
+    #print("solving")
     values=grid_values(grid)
-    print("initial grid:")
-    display(values)
+    #print("initial grid:")
+    #display(values)
     return search(values)
 
 if __name__ == '__main__':
