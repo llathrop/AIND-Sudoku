@@ -22,10 +22,37 @@ def naked_twins(values):
 
     Returns:
         the values dictionary with the naked twins eliminated from peers.
-    """
-
+    """    
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
+    #print("input to naked twins:")
+    #display(values)
+    
+    size2_boxes=set([box for box in values.keys() if len(values[box])==2])
+    #print("correct size boxes",size2_boxes)
+    for box in size2_boxes: # might as well only deal with boxes of the correct size to start
+        #print("box unit:",units[box])
+        for unit in units[box]:
+            box_unit=size2_boxes & set(unit)
+            #print ("box_unit:",box,box_unit)
+            naked_twins=[box] #if this grows, we have a list of twins
+            for b_unit in box_unit: # let's examine each peer and see if it is a twin
+                if values[box]==values[b_unit] and not box == b_unit:
+                    #print("twins:{}:{} and {}:{}".format(box,values[box],b_unit,values[b_unit]))
+                    naked_twins.append(b_unit)
+            #print("naked_twins",naked_twins)
+    
+            if len(naked_twins) >1: #test if we found any twins
+                search_unit=set(unit)-set(naked_twins) # the list of peers that aren't the twins to remove values from
+                #print("search_unit",search_unit)
+                for digit in values[box]: # we want to remove the individual digits of the twin
+                    for s_unit in search_unit:
+                        if len(values[s_unit])>1:
+                            assign_value(values, s_unit, values[s_unit].replace(digit,''))
+
+    #print("Output from naked twins:")
+    #display(values)            
+    return values
 
 def cross(a, b):
     "Cross product of elements in A and elements in B."
@@ -38,10 +65,15 @@ cols = '123456789'
 	
 boxes = cross(rows, cols)
 
+diag_a=[rows[i]+cols[i] for i in range(len(rows))]
+diag_b=[rows[i]+cols[len(rows)-1-i] for i in range(len(rows))]
+diagonal_units=[diag_a,diag_b]
+print(diagonal_units)
+
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-unitlist = row_units + column_units + square_units
+unitlist = row_units + column_units + square_units+diagonal_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
@@ -89,7 +121,7 @@ def eliminate(values):
     for box in solved_values:
         digit = values[box]
         for peer in peers[box]:
-            values[peer] = values[peer].replace(digit,'')
+            assign_value(values, peer, values[peer].replace(digit,''))
     return values
 
 
@@ -103,7 +135,7 @@ def only_choice(values):
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
-                values[dplaces[0]] = digit
+                assign_value(values, dplaces[0], digit)
     return values
 
 def reduce_puzzle(values):
@@ -120,6 +152,7 @@ def reduce_puzzle(values):
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
         values = eliminate(values)
         values = only_choice(values)
+        values = naked_twins(values)
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         stalled = solved_values_before == solved_values_after
         if len([box for box in values.keys() if len(values[box]) == 0]):
@@ -138,7 +171,7 @@ def search(values):
     # Now use recurrence to solve each one of the resulting sudokus, and 
     for value in values[s]:
         new_sudoku = values.copy()
-        new_sudoku[s] = value
+        assign_value(new_sudoku, s, value)
         attempt = search(new_sudoku)
         if attempt:
             return attempt
@@ -152,6 +185,11 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    print("solving")
+    values=grid_values(grid)
+    print("initial grid:")
+    display(values)
+    return search(values)
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
